@@ -57,6 +57,11 @@ func (a *App) Run(ctx context.Context) error {
 	return server.ListenAndServe()
 }
 
+func (a *App) check(resp http.ResponseWriter, req *http.Request) {
+	resp.WriteHeader(http.StatusOK)
+	fmt.Fprint(resp, "OK")
+}
+
 func (a *App) status(resp http.ResponseWriter, req *http.Request) {
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_0_0_0
@@ -73,15 +78,14 @@ func (a *App) status(resp http.ResponseWriter, req *http.Request) {
 	}
 	defer client.Close()
 
-	fmt.Fprintln(resp, "Brokers")
+	fmt.Fprintln(resp, "Brokers:")
 	for _, broker := range client.Brokers() {
-		fmt.Fprintf(resp, "- %v\n", broker)
+		fmt.Fprintf(resp, "- ID: %v Addr: %v\n", broker.ID(), broker.Addr())
 	}
 	fmt.Fprintln(resp)
 
-	fmt.Fprintln(resp, "Controller")
+	fmt.Fprintln(resp, "Controller:")
 	controller, err := client.Controller()
-	fmt.Fprintf(resp, "- Rack: %v\n", controller.Rack())
 	fmt.Fprintf(resp, "- ID: %v\n", controller.ID())
 	fmt.Fprintf(resp, "- Addr: %v\n", controller.Addr())
 	fmt.Fprintln(resp)
@@ -91,7 +95,7 @@ func (a *App) status(resp http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(resp, "get kafka topics failed: %v", err)
 		return
 	}
-	fmt.Fprintln(resp, "Topics")
+	fmt.Fprintln(resp, "Topics:")
 	for _, topic := range topics {
 		fmt.Fprintf(resp, "- %v (", topic)
 		partitions, err := client.Partitions(topic)
@@ -109,9 +113,4 @@ func (a *App) status(resp http.ResponseWriter, req *http.Request) {
 		fmt.Fprintln(resp, ")")
 	}
 	fmt.Fprintln(resp)
-}
-
-func (a *App) check(resp http.ResponseWriter, req *http.Request) {
-	resp.WriteHeader(http.StatusOK)
-	fmt.Fprint(resp, "OK")
 }
