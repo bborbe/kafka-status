@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/Shopify/sarama"
@@ -96,6 +97,9 @@ func (a *App) status(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 	fmt.Fprintln(resp, "Topics:")
+
+	sort.Strings(topics)
+
 	for _, topic := range topics {
 		fmt.Fprintf(resp, "- %v (", topic)
 		partitions, err := client.Partitions(topic)
