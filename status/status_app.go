@@ -108,10 +108,15 @@ func (a *App) status(resp http.ResponseWriter, req *http.Request) {
 			return
 		}
 		for i, partition := range partitions {
+			offset, err := client.GetOffset(topic, partition, sarama.OffsetOldest)
+			if err != nil {
+				fmt.Fprintf(resp, "get offset for topic %s and partition %d failed: %v", topic, partition, err)
+				return
+			}
 			if i == 0 {
-				fmt.Fprintf(resp, "%v", partition)
+				fmt.Fprintf(resp, "%d=%d", partition, offset)
 			} else {
-				fmt.Fprintf(resp, ",%v", partition)
+				fmt.Fprintf(resp, ",%d=%d", partition, offset)
 			}
 		}
 		fmt.Fprintln(resp, ")")
