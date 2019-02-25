@@ -108,7 +108,7 @@ func (a *App) status(resp http.ResponseWriter, req *http.Request) {
 			return
 		}
 		for i, partition := range partitions {
-			offset, err := client.GetOffset(topic, partition, sarama.OffsetOldest)
+			offset, err := client.GetOffset(topic, partition, sarama.OffsetNewest)
 			if err != nil {
 				fmt.Fprintf(resp, "get offset for topic %s and partition %d failed: %v", topic, partition, err)
 				return
